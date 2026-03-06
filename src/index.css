@@ -1,0 +1,227 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --bg-color: #0d0d0d;
+  --text-color: #c8b89a;
+  --user-text: #e8e8e8;
+  --system-error: #a83232;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: var(--font-mono);
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  font-size: 16px;
+  line-height: 1.5;
+  cursor: crosshair;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+  transition: background-color 2s ease;
+}
+
+/* Background Heat Map Layer */
+.heat-map {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: radial-gradient(circle at center, rgba(42, 10, 10, 0.4) 0%, rgba(0, 0, 0, 0) 70%);
+  pointer-events: none;
+  z-index: -1;
+  transition: opacity 3s ease;
+}
+
+.crt-display {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.scanlines {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%,
+    rgba(0, 0, 0, 0.25) 50%
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
+  z-index: 50;
+  opacity: 0.6;
+}
+
+.scanline-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 10vh;
+  background: linear-gradient(
+    0deg,
+    rgba(0,0,0,0) 0%,
+    rgba(200, 184, 154, 0.05) 50%,
+    rgba(0,0,0,0) 100%
+  );
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 51;
+}
+
+/* Base keyframe is added dynamically through JS variable animationDuration */
+@keyframes scanline {
+  0% { transform: translateY(-100vh); }
+  100% { transform: translateY(100vh); }
+}
+
+.flash {
+  animation: crt-flash 80ms ease-out forwards;
+}
+
+@keyframes crt-flash {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; filter: brightness(1.2); }
+  100% { opacity: 1; }
+}
+
+/* Glitch Shift Effect */
+.glitch-shift {
+  animation: crt-shift 300ms cubic-bezier(.25, .46, .45, .94) forwards;
+}
+
+@keyframes crt-shift {
+  0% { transform: translate(0, 0); filter: hue-rotate(0deg); }
+  20% { transform: translate(-10px, 5px); filter: hue-rotate(90deg) contrast(2); }
+  40% { transform: translate(15px, -5px); filter: invert(0.2); }
+  60% { transform: translate(-5px, 10px); filter: hue-rotate(0deg); }
+  80% { transform: translate(5px, -5px); }
+  100% { transform: translate(0, 0); }
+}
+
+.blink {
+  animation: blinker 1s step-end infinite;
+}
+
+@keyframes blinker {
+  50% { opacity: 0; }
+}
+
+.heartbeat {
+  animation: heartbeat-pulse 4s infinite;
+}
+
+@keyframes heartbeat-pulse {
+  0%, 90% { opacity: 0.2; }
+  95% { opacity: 1; }
+  100% { opacity: 0.2; }
+}
+
+.idle-dim {
+  transition: opacity 2s ease-in-out;
+  opacity: 0.4;
+}
+
+h1 {
+  font-size: 2rem;
+  letter-spacing: 0.5rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+.subtitle {
+  font-size: 0.75rem;
+  letter-spacing: 0.1rem;
+  opacity: 0.6;
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.message-list-container {
+  flex-grow: 1;
+  overflow-y: auto;
+  position: relative;
+}
+
+.message-list-container::-webkit-scrollbar {
+  display: none;
+}
+
+.message-list-container {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.static-fade {
+  position: fixed; /* absolute to viewport rather than list so it always covers bottom */
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  height: 120px;
+  background: linear-gradient(
+    to bottom,
+    rgba(13, 13, 13, 0),
+    rgba(13, 13, 13, 1) 80%
+  );
+  pointer-events: none;
+  z-index: 10;
+}
+
+input, textarea {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  outline: none;
+  width: 100%;
+  resize: none;
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--text-color);
+  opacity: 0.3;
+}
+
+/* Redacted Text Effect */
+.redacted {
+  background-color: var(--text-color);
+  color: var(--text-color);
+  cursor: help;
+  transition: all 0.2s;
+  padding: 0 4px;
+}
+
+.redacted:hover {
+  background-color: transparent;
+  color: var(--system-error);
+  text-decoration: underline dotted var(--system-error);
+}
+
+/* Artifact TAPE counter positioning */
+.tape-counter {
+  position: fixed;
+  bottom: 0.5rem;
+  right: 1rem;
+  font-size: 0.7rem;
+  opacity: 0.4;
+  z-index: 100;
+}
