@@ -225,3 +225,35 @@ input::placeholder, textarea::placeholder {
   opacity: 0.4;
   z-index: 100;
 }
+
+/* Easter Egg 1 — OVERRIDE Flicker */
+.override-flicker {
+  animation: violent-flicker 0.1s infinite;
+}
+
+@keyframes violent-flicker {
+  0% { opacity: 1; }
+  25% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+  75% { opacity: 0.1; }
+  100% { opacity: 1; filter: brightness(1.5) contrast(1.2); }
+}
+
+/* Easter Egg 3 — Konami Code Invert */
+body.konami-invert {
+  background-color: #c8b89a;
+  color: #0d0d0d;
+}
+
+body.konami-invert .scanlines {
+  filter: invert(1);
+}
+
+body.konami-flicker {
+  animation: konami-glitch 50ms forwards;
+}
+
+@keyframes konami-glitch {
+    0% { filter: invert(0.5); transform: translate(-2px, 2px); }
+    100% { filter: invert(0) ; transform: translate(0, 0); }
+}

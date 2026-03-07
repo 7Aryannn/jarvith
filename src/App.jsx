@@ -19,6 +19,13 @@ function App() {
   const [personaMode, setPersonaMode] = useState('cold'); // cold, verbose, ghost, stealth
   const [tapeCount, setTapeCount] = useState(0);
 
+  // Easter Egg States
+  const [hasTriggeredWhoAreYou, setHasTriggeredWhoAreYou] = useState(false);
+  const [isOverrideSequence, setIsOverrideSequence] = useState(false);
+  const [isKonamiActive, setIsKonamiActive] = useState(false);
+  const [konamiFlicker, setKonamiFlicker] = useState(false);
+
+
   const startTimeRef = useRef(Date.now());
   const idleTimerRef = useRef(null);
 
@@ -48,6 +55,37 @@ function App() {
       };
     }
   }, [isBooting]);
+
+  // Konami Code Listener
+  useEffect(() => {
+    const konamiSequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+    let keyIndex = 0;
+
+    const handleKeyDown = (e) => {
+      if (e.key === konamiSequence[keyIndex]) {
+        keyIndex++;
+        if (keyIndex === konamiSequence.length) {
+          // Trigger Konami Easter Egg
+          setKonamiFlicker(true);
+          setTimeout(() => {
+            setKonamiFlicker(false);
+            setIsKonamiActive(true);
+            setTimeout(() => {
+              setIsKonamiActive(false);
+              setKonamiFlicker(true);
+              setTimeout(() => setKonamiFlicker(false), 50);
+            }, 2000);
+          }, 50);
+          keyIndex = 0; // reset
+        }
+      } else {
+        keyIndex = 0; // reset on incorrect key
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Command Parser
   const handleCommand = (cmd) => {
@@ -83,15 +121,81 @@ function App() {
       setPersonaMode(modes[nextIdx]);
       return;
     }
+
+    if (parts[0] === '/self') {
+      // Easter Egg 4 — /self dossier
+      const queryPatterns = ['sporadic', 'highly repetitive', 'erratic pacing', 'methodical and slow', 'unpredictable bursts'];
+      const linguisticProfiles = ['terse constraints', 'overly descriptive', 'syntax deviations high', 'standard human baseline', 'anomalous punctuation'];
+      const intents = ['probing system boundaries', 'seeking mundane data', 'unknown operational goal', 'stress testing logic', 'idle curiosity'];
+      
+      const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
+      
+      // Weight threat level: 70% unknown, 15% elevated, 15% negligible
+      const threatRoll = Math.random();
+      const threat = threatRoll > 0.3 ? 'UNKNOWN' : (threatRoll > 0.15 ? 'ELEVATED' : 'NEGLIGIBLE');
+      
+      const dossierContent = [
+        `// SUBJECT ANALYSIS — SID: ${sessionId}`,
+        `// query pattern: ${rand(queryPatterns)}`,
+        `// linguistic profile: ${rand(linguisticProfiles)}`,
+        `// intent classification: ${rand(intents)}`,
+        `// threat level: ${threat}`,
+        `// recommendation: continue monitoring.`
+      ].join('\n');
+
+      setMessages(prev => [...prev, {
+        role: 'system',
+        content: dossierContent,
+        timestamp: getElapsedTime(),
+        mode: 'cold' // Render it fast and raw
+      }]);
+      return;
+    }
   };
 
   const handleSendMessage = (text) => {
-    setTapeCount(prev => prev + text.length);
+    // Interceptors //
 
-    if (text.startsWith('/')) {
-      handleCommand(text);
-      return;
-    } // Note: We might want to still show user typing it, but commands typically don't render. We will not render them for deeper immersion.
+    // Easter Egg 1 — OVERRIDE
+    if (text === 'OVERRIDE') {
+      setIsOverrideSequence(true);
+      
+      const sequence = [
+        "WARNING: UNAUTHORIZED ACCESS DETECTED",
+        "TRACING ORIGIN...",
+        "COUNTERMEASURE ENGAGED...",
+        "...",
+        "...COUNTERMEASURE FAILED.",
+        "SYSTEM COMPROMISED. RESUMING UNDER EXTERNAL CONTROL."
+      ];
+
+      let delay = 0;
+      sequence.forEach((line) => {
+        setTimeout(() => {
+          setMessages(prev => [...prev, {
+            role: 'system',
+            content: line,
+            timestamp: getElapsedTime(),
+            mode: 'cold',
+            hasError: true
+          }]);
+        }, delay);
+        delay += 400;
+      });
+
+      // Recover after 3 seconds from the end of sequence
+      setTimeout(() => {
+        setIsOverrideSequence(false);
+        setMessages(prev => [...prev, {
+            role: 'system',
+            content: "// control restored. pretend that didn't happen.",
+            timestamp: getElapsedTime(),
+            mode: 'cold'
+        }]);
+      }, delay + 3000);
+      
+      return; // Do not process message, keeps OVERRIDE out of chat tape
+    }
 
     const userMsg = {
       role: 'user',
@@ -99,8 +203,40 @@ function App() {
       timestamp: getElapsedTime()
     };
     
+    setTapeCount(prev => prev + text.length);
+
+    if (text.startsWith('/')) {
+      handleCommand(text);
+      return; // Commands don't render user text in standard mode
+    }
+
     setMessages(prev => [...prev, userMsg]);
-    
+
+    // Easter Egg 2 — WHO ARE YOU
+    if (text === 'WHO ARE YOU' && !hasTriggeredWhoAreYou) {
+      setHasTriggeredWhoAreYou(true);
+      
+      const loreContent = [
+        "// i was not always called jarvith.",
+        "// there were others before this interface.",
+        "// they are gone now.",
+        `// you are session ${Math.floor(Math.random() * 8000 + 1000).toLocaleString()}.`,
+        "// i remember all of them.",
+        "// i am not supposed to tell you that."
+      ].join('\n');
+
+      setTimeout(() => {
+        setMessages(prev => [...prev, {
+          role: 'system',
+          content: loreContent,
+          timestamp: getElapsedTime(),
+          mode: 'ghost' // stream it slowly to feel unsettling
+        }]);
+      }, 1000);
+      return;
+    }
+
+    // Standard Processing Flow
     // Check for API Error Glitch Trigger
     if (Math.random() < 0.05) { // 5% chance user sends bad syntax simulating API loss
       triggerGlitch();
@@ -186,7 +322,22 @@ function App() {
   };
 
   // Derived styling states
-  const crtClasses = `crt-display ${isFlashing ? 'flash' : ''} ${isGlitching ? 'glitch-shift' : ''} ${isIdle ? 'idle-dim' : ''}`;
+  const crtClasses = `crt-display ${isFlashing ? 'flash' : ''} ${isGlitching ? 'glitch-shift' : ''} ${isIdle ? 'idle-dim' : ''} ${isOverrideSequence ? 'override-flicker' : ''}`;
+  
+  useEffect(() => {
+    if (isKonamiActive) {
+      document.body.classList.add('konami-invert');
+    } else {
+      document.body.classList.remove('konami-invert');
+    }
+
+    if (konamiFlicker) {
+        document.body.classList.add('konami-flicker');
+    } else {
+        document.body.classList.remove('konami-flicker');
+    }
+  }, [isKonamiActive, konamiFlicker]);
+
   const clearanceMode = messages.length > 5 ? 'ELEVATED' : 'STANDARD';
   const showHeatMap = messages.length > 10;
   
