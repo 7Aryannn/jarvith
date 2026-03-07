@@ -1,10 +1,10 @@
 # J A R V I T H  //  COGNITIVE INTERFACE v0.1
 
-**JARVITH** is a highly stylized, web-based AI chat interface designed to feel like a classified, decommissioned terminal from an alternate 1990s where AI existed but the modern internet did not. 
+**JARVITH** is a highly stylized, web-based AI chat interface designed to feel like a classified, decommissioned terminal from an alternate 1990s where AI existed but the modern internet did not.
 
 It completely abandons modern UI trends—no chat bubbles, no avatars, no rounded corners, and no bright colors. Instead, it embraces a **Brutalist Minimalism meets Analog Decay** aesthetic featuring an amber-on-black monospace layout, animated CRT scanlines, and subtle film grain.
 
-![JARVITH Interface Concept](https://via.placeholder.com/800x450/0d0d0d/c8b89a?text=J+A+R+V+I+T+H+//+RESTRICTED+ACCESS)
+🔗 **Live Interface:** [jarvith.vercel.app](https://jarvith.vercel.app)
 
 ## Features
 
@@ -40,7 +40,7 @@ Control the system via hidden `/` slash commands (which do not render visually i
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/jarvith.git
+   git clone https://github.com/7Aryannn/jarvith.git
    cd jarvith
    ```
 
@@ -58,4 +58,4 @@ Control the system via hidden `/` slash commands (which do not render visually i
    Open `http://localhost:5173`. Wait for the boot sequence. Enter any passphrase to begin. Remember: **Ctrl + Enter** is the only way to submit a query.
 
 ---
-*// END OF LINE.*
+
