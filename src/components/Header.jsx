@@ -2,7 +2,7 @@ import React from 'react';
 
 const Header = ({ sessionId, clearanceMode }) => {
   return (
-    <header style={{ position: 'relative', width: '100%', marginBottom: '2rem' }}>
+    <header style={{ position: 'relative', width: '100%', marginBottom: '2rem', flexShrink: 0 }}>
       <h1>J A R V I T H</h1>
       <div className="subtitle">
         COGNITIVE INTERFACE v0.1 // RESTRICTED ACCESS
