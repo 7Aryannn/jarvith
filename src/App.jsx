@@ -9,7 +9,24 @@ const generateHex = () => Math.floor(Math.random() * 16777215).toString(16).toUp
 function App() {
   const [isBooting, setIsBooting] = useState(true);
   const [sessionId] = useState(generateHex());
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState(() => {
+    try {
+      const saved = localStorage.getItem('jarvith_history');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return [
+            ...parsed,
+            { role: 'system', content: `> MEMORY RESTORED — ${parsed.length} ENTRIES LOADED`, timestamp: 0, mode: 'cold' }
+          ];
+        }
+      }
+    } catch(e) {}
+    return [];
+  });
+  const [ttsEnabled, setTtsEnabled] = useState(() => {
+    return localStorage.getItem('jarvith_tts') === 'true';
+  });
   const [isIdle, setIsIdle] = useState(false);
   const [isFlashing, setIsFlashing] = useState(false);
   const [isGlitching, setIsGlitching] = useState(false);
@@ -25,6 +42,39 @@ function App() {
 
   const getElapsedTime = () => {
     return Math.floor((Date.now() - startTimeRef.current) / 1000);
+  };
+
+  useEffect(() => {
+    if (messages.length === 0) return;
+    if (messages.length === 1 && messages[0].content === '> MEMORY WIPED.') return;
+    const sliceIdx = Math.max(0, messages.length - 100);
+    localStorage.setItem('jarvith_history', JSON.stringify(messages.slice(sliceIdx)));
+  }, [messages]);
+
+  const toggleTts = () => {
+    const nextState = !ttsEnabled;
+    setTtsEnabled(nextState);
+    localStorage.setItem('jarvith_tts', String(nextState));
+    if (!nextState && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+  };
+
+  const playTTS = (text) => {
+    if (!window.speechSynthesis || !ttsEnabled) return;
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.85;
+    utterance.pitch = 0.6;
+    utterance.volume = 1;
+    
+    let voices = window.speechSynthesis.getVoices();
+    let selectedVoice = voices.find(v => v.name.includes('Google') || v.name.includes('English'));
+    if (!selectedVoice && voices.length > 0) {
+      selectedVoice = voices.find(v => !v.default) || voices[0];
+    }
+    if (selectedVoice) utterance.voice = selectedVoice;
+    
+    window.speechSynthesis.speak(utterance);
   };
 
   const resetIdleTimer = () => {
@@ -82,7 +132,8 @@ function App() {
     const parts = cmd.toLowerCase().split(' ');
 
     if (parts[0] === '/clear') {
-      setMessages([]);
+      localStorage.removeItem('jarvith_history');
+      setMessages([{ role: 'system', content: '> MEMORY WIPED.', timestamp: getElapsedTime(), mode: 'cold' }]);
       return;
     }
 
@@ -293,6 +344,7 @@ function App() {
     };
 
     setMessages(prev => [...prev, sysMsg]);
+    playTTS(baseResponse);
   };
 
   const crtClasses = `crt-display ${isFlashing ? 'flash' : ''} ${isGlitching ? 'glitch-shift' : ''} ${isIdle ? 'idle-dim' : ''} ${isOverrideSequence ? 'override-flicker' : ''}`;
@@ -349,8 +401,11 @@ function App() {
           </div>
         )}
 
-        <div className="tape-counter">
-          TAPE: {String(tapeCount).padStart(5, '0')} CH // MODE: {personaMode.toUpperCase()}
+        <div className="tape-counter" style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <span>TAPE: {String(tapeCount).padStart(5, '0')} CH // MODE: {personaMode.toUpperCase()}</span>
+          <span style={{ cursor: 'pointer' }} onClick={toggleTts}>
+            {ttsEnabled ? '[SPEAK]' : '[MUTE]'}
+          </span>
         </div>
       </div>
     </>
