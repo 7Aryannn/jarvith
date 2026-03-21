@@ -4,7 +4,7 @@
 
 It completely abandons modern UI trends—no chat bubbles, no avatars, no rounded corners, and no bright colors. Instead, it embraces a **Brutalist Minimalism meets Analog Decay** aesthetic featuring an amber-on-black monospace layout, animated CRT scanlines, and subtle film grain.
 
-🔗 **Live Interface :** [jarvith.vercel.app](https://jarvith.vercel.app)
+🔗 **Live Interface:** [jarvith.vercel.app](https://jarvith.vercel.app)
 
 ## Features
 
