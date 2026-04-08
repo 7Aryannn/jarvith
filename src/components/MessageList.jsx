@@ -14,7 +14,7 @@ const MessageList = ({ messages }) => {
       <div style={{ paddingBottom: '140px' }}> {/* Space for fade out zone */}
         {messages.map((msg, index) => (
           <MessageItem 
-            key={index}
+            key={msg.id || `${msg.timestamp}-${index}`}
             role={msg.role}
             content={msg.content}
             timestamp={msg.timestamp}

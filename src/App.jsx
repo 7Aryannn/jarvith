@@ -15,9 +15,11 @@ function App() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
+          // Add ids retroactively if missing
+          const parsedWithIds = parsed.map((m, i) => ({...m, id: m.id || `${Date.now()}-${i}`}));
           return [
-            ...parsed,
-            { role: 'system', content: `> MEMORY RESTORED — ${parsed.length} ENTRIES LOADED`, timestamp: 0, mode: 'cold' }
+            ...parsedWithIds,
+            { id: `restore-${Date.now()}`, role: 'system', content: `> MEMORY RESTORED — ${parsed.length} ENTRIES LOADED`, timestamp: 0, mode: 'cold' }
           ];
         }
       }
@@ -133,7 +135,7 @@ function App() {
 
     if (parts[0] === '/clear') {
       localStorage.removeItem('jarvith_history');
-      setMessages([{ role: 'system', content: '> MEMORY WIPED.', timestamp: getElapsedTime(), mode: 'cold' }]);
+      setMessages([{ id: `wiped-${Date.now()}`, role: 'system', content: '> MEMORY WIPED.', timestamp: getElapsedTime(), mode: 'cold' }]);
       return;
     }
 
@@ -181,6 +183,7 @@ function App() {
       ].join('\n');
 
       setMessages(prev => [...prev, {
+        id: `self-${Date.now()}`,
         role: 'system',
         content: dossierContent,
         timestamp: getElapsedTime(),
@@ -207,6 +210,7 @@ function App() {
       sequence.forEach((line) => {
         setTimeout(() => {
           setMessages(prev => [...prev, {
+            id: `sys-${Date.now()}-${delay}`,
             role: 'system',
             content: line,
             timestamp: getElapsedTime(),
@@ -220,6 +224,7 @@ function App() {
       setTimeout(() => {
         setIsOverrideSequence(false);
         setMessages(prev => [...prev, {
+          id: `sys-${Date.now()}-ctrl`,
           role: 'system',
           content: "// control restored. pretend that didn't happen.",
           timestamp: getElapsedTime(),
@@ -231,6 +236,7 @@ function App() {
     }
 
     const userMsg = {
+      id: `user-${Date.now()}`,
       role: 'user',
       content: text,
       timestamp: getElapsedTime()
@@ -259,6 +265,7 @@ function App() {
 
       setTimeout(() => {
         setMessages(prev => [...prev, {
+          id: `sys-${Date.now()}-who`,
           role: 'system',
           content: loreContent,
           timestamp: getElapsedTime(),
@@ -332,6 +339,7 @@ function App() {
     setTapeCount(prev => prev + baseResponse.length);
 
     const sysMsg = {
+      id: `sys-${Date.now()}-ans`,
       role: 'system',
       content: baseResponse,
       timestamp: getElapsedTime(),

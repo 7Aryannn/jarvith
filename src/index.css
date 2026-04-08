@@ -258,3 +258,34 @@ body.konami-flicker {
     0% { filter: invert(0.5); transform: translate(-2px, 2px); }
     100% { filter: invert(0) ; transform: translate(0, 0); }
 }
+
+/* Responsiveness */
+@media (max-width: 768px) {
+  .crt-display {
+    padding: 1rem;
+  }
+  
+  h1 {
+    font-size: clamp(1.2rem, 6vw, 1.5rem);
+    white-space: normal;
+  }
+
+  .tape-counter {
+    position: static;
+    margin-top: auto;
+    padding-top: 1rem;
+    text-align: center;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 480px) {
+  .crt-display {
+    padding: 0.5rem;
+  }
+  .tape-counter {
+    font-size: 0.6rem;
+  }
+}
